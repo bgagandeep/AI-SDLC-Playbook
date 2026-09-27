@@ -1,0 +1,17 @@
+{
+  "framework": "AI-Native SDLC Framework",
+  "version": "1.2.0",
+  "basis": [
+    "ai-native-sdlc-framework",
+    "ai-native-sdlc-framework-v1.1.0"
+  ],
+  "intent": "Reusable greenfield and brownfield AI-native software delivery framework",
+  "principles": [
+    "AI-assisted development with human accountability",
+    "ISO/IEC 42001-aligned governance scaffolding",
+    "Evidence-driven lifecycle",
+    "Explicit quality and release gates",
+    "Brownfield discovery before change",
+    "Evaluation and incident readiness"
+  ]
+}

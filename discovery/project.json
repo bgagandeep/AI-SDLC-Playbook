@@ -1,0 +1,46 @@
+{
+  "status": "baseline-discovery",
+  "facts": {
+    "git": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "python": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "node": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "flutter": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "go": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "rust": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "java_maven": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "java_gradle": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "dotnet": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "docker": {
+      "value": false,
+      "confidence": "verified"
+    }
+  },
+  "unknowns": []
+}

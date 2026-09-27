@@ -1,0 +1,15 @@
+version: 1
+project:
+  type: auto
+  name: auto
+stacks:
+  auto_detect: true
+testing:
+  auto_detect: true
+quality:
+  auto_detect: true
+deployment:
+  auto_detect: true
+governance:
+  risk_classification: required
+  evidence_binding: required

@@ -1,0 +1,23 @@
+version: 1
+metrics:
+  - name: api_error_rate
+    baseline: rolling_7d
+    rules: western_electric
+    tiers:
+      1sigma: {action: log}
+      2sigma: {action: diagnose}
+      3sigma: {action: propose, route: intent_spec}
+  - name: latency_p95
+    baseline: rolling_7d
+    rules: western_electric
+    tiers:
+      1sigma: {action: log}
+      2sigma: {action: diagnose}
+      3sigma: {action: propose, route: intent_spec}
+  - name: model_cost
+    baseline: rolling_24h
+    rules: western_electric
+    tiers:
+      1sigma: {action: log}
+      2sigma: {action: diagnose}
+      3sigma: {action: propose, route: intent_spec}
