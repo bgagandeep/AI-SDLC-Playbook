@@ -33,6 +33,9 @@ REQUIRED_PATHS = [
     "scripts/check_governance.py",
     "scripts/test_guard.py",
     "discovery/README.md",
+    "intent/README.md",
+    "specs/README.md",
+    "plans/README.md",
     "docs/governance/release-gates.md",
     "evals/README.md",
     "governance/README.md",
@@ -113,3 +116,19 @@ def test_docs_reference_plural_routes_only():
     for name in ("PLANNING.md", "telemetry/bands.yaml"):
         content = (REPO_ROOT / name).read_text()
         assert not re.search(r"\broute:\s", content), f"{name} uses singular 'route:'"
+
+
+def test_generated_project_state_is_not_shipped():
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "discovery/project.json"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        check=False,
+    )
+    assert tracked.returncode != 0, "generated discovery state must not be tracked"
+    ignored = subprocess.run(
+        ["git", "check-ignore", "--no-index", "-q", "discovery/project.json"],
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    assert ignored.returncode == 0, "generated discovery state must remain gitignored"
