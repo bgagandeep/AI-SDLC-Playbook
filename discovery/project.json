@@ -1,12 +1,14 @@
 {
   "status": "baseline-discovery",
+  "root": ".",
+  "commit_sha": null,
   "facts": {
     "git": {
-      "value": false,
+      "value": true,
       "confidence": "verified"
     },
     "python": {
-      "value": false,
+      "value": true,
       "confidence": "verified"
     },
     "node": {
@@ -33,14 +35,34 @@
       "value": false,
       "confidence": "verified"
     },
-    "dotnet": {
+    "docker": {
       "value": false,
       "confidence": "verified"
     },
-    "docker": {
+    "terraform": {
+      "value": false,
+      "confidence": "verified"
+    },
+    "github_actions": {
+      "value": true,
+      "confidence": "verified"
+    },
+    "dotnet": {
       "value": false,
       "confidence": "verified"
     }
   },
-  "unknowns": []
+  "unknowns": [
+    "architecture-style",
+    "runtime-topology",
+    "data-flows-and-classification",
+    "external-service-dependencies",
+    "deployment-targets",
+    "security-boundaries-and-authz-model",
+    "observability-coverage",
+    "pre-existing-test-lint-security-failures",
+    "known-technical-debt",
+    "rollback-strategy",
+    "version-control-history"
+  ]
 }

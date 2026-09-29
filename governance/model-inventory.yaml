@@ -1,2 +1,3 @@
 version: 1
 models: []
+not_applicable_reason: This repository provides model-agnostic SDLC controls and does not deploy or invoke an AI model at runtime.

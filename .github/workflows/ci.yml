@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  framework:
+    name: Framework integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Bind IDE rules and verify context kit
+        run: |
+          ./scripts/verify-context-kit.sh
+          ./scripts/verify-context-kit.sh --check
+      - name: Lint
+        run: |
+          flake8 scripts/ tests/
+          mypy scripts/
+      - name: Tests
+        run: pytest tests/ -v --cov=scripts --cov-report=term-missing
+
+  project:
+    name: Project stack checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect stacks
+        id: detect
+        run: |
+          echo "node=$([[ -f package.json ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "flutter=$([[ -f pubspec.yaml ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.node == 'true'
+        with:
+          node-version: "20"
+      - name: Node lint and test
+        if: steps.detect.outputs.node == 'true'
+        run: |
+          npm ci
+          npm run lint
+          npm run test
+
+      - uses: subosito/flutter-action@v2
+        if: steps.detect.outputs.flutter == 'true'
+      - name: Flutter analyze and test
+        if: steps.detect.outputs.flutter == 'true'
+        run: |
+          flutter analyze
+          flutter test --coverage

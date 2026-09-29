@@ -1,2 +1,10 @@
 version: 1
-systems: []
+systems:
+  - id: ai-native-sdlc-framework
+    purpose: Govern agent-assisted software delivery through executable discovery, testing, evidence, approval, and release controls.
+    owner: repository-maintainer
+    risk_class: Elevated
+    lifecycle_status: development
+    data_classification: repository-metadata
+    model_ids: []
+    human_oversight: Human approval is required for intent acceptance, protected-environment release gates, and production authorization.
