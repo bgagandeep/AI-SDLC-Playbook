@@ -1,2 +1,26 @@
 version: 1
-risks: []
+risks:
+  - id: R-001
+    description: A production command could run without valid human release authorization.
+    risk_class: Critical
+    owner: release-manager
+    mitigation: HMAC-signed, commit-bound approval tokens enforced by the production gate hook and protected CI environment.
+    evidence:
+      - .claude/hooks/production-gate.sh
+      - tests/test_production_gate.py
+  - id: R-002
+    description: An in-repository evidence ledger can be rewritten and its hash chain recomputed.
+    risk_class: Elevated
+    owner: governance-owner
+    mitigation: Verify every chain transition and anchor the ledger head in a signed tag or external append-only store.
+    evidence:
+      - scripts/gate_ledger.py
+      - tests/test_gate_ledger.py
+  - id: R-003
+    description: IDE-specific agent instructions can drift from the canonical orchestration rules.
+    risk_class: Elevated
+    owner: platform-owner
+    mitigation: Bind supported IDE rule files to AGENTS.md and verify links in CI.
+    evidence:
+      - scripts/verify-context-kit.sh
+      - tests/test_framework_integrity.py

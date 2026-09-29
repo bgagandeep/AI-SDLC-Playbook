@@ -97,16 +97,16 @@ Every proposed change is assigned a Risk Class that dictates its required eviden
 
 | Risk Class | Change Criteria | Verification Required | Gate Permission |
 | :--- | :--- | :--- | :--- |
-| **Standard** | Localized, non-breaking, easily reversible (e.g., UI tweaks, docs). | Automated unit tests (`npm run test` / `pytest`), linter clean. | Auto-merge on green CI / Single Engineer approval. |
+| **Standard** | Localized, non-breaking, easily reversible (e.g., UI tweaks, docs). | Automated unit tests (`npm run test` / `pytest`), linter clean. | Single Engineer approval after green CI. |
 | **Elevated** | API contract changes, schema updates, dependency bumps, data pipelines. | Risk-derived property tests, contract tests, independent agent review, canary deployment. | Tech Lead / Code Owner sign-off required. |
-| **Critical** | Authentication, payment logic, PII/PHI handling, ISO 42001 AI boundary, migrations. | Multi-agent adversarial review, threat model validation, rollback dry-run, SLSA provenance verification. | Separation of Duties: Dual Human Sign-off (Domain Owner + AppSec). |
+| **Critical** | Authentication, payment logic, PII/PHI handling, ISO 42001 AI boundary, migrations. | Multi-agent adversarial review, threat model validation, rollback dry-run, and provenance evidence when the project produces deployable artifacts. | Separation of Duties: Dual Human Sign-off (Domain Owner + AppSec). |
 
 ---
 
 ## 4. Decision Contract & Trustworthy Evidence
 A Quality Gate evaluates evidence against policy to authorize state transitions. Evidence must fulfill five trustworthiness criteria:
 1. **Independent Origin**: Produced by a verification mechanism independent of the authoring agent.
-2. **Exact Revision Binding**: Hard-linked to the specific Git commit SHA and SLSA build provenance.
+2. **Exact Revision Binding**: Hard-linked to the specific Git commit SHA and, when configured by the adopting project, build provenance.
 3. **Producer Integrity**: Generated inside an isolated, trusted CI runner.
 4. **Current Validity**: Free from invalidating events (subsequent commits invalidate prior test runs).
 5. **Risk Coverage**: Directly maps to a harm or requirement flagged in the Risk Profile.
@@ -122,7 +122,7 @@ A feature branch cannot merge until the following evidence package is validated:
 - [ ] Visual UI verification screenshot captured and verified via Playwright.
 - [ ] Multi-pass code review completed (`REVIEW.md`) with 0 'Important' findings.
 - [ ] Continuous eval suite pass rate > 95% on regression benchmark.
-- [ ] Cryptographic approval ledger entry recorded via `scripts/gate_ledger.py`.
+- [ ] Hash-chained approval ledger entry recorded via `scripts/gate_ledger.py` and chain head anchored externally for tamper resistance.
 
 ## 6. Discovery & Baseline Contract
 Every repository takeover starts with a read-only discovery pass. Capture technology, architecture, dependencies, data flows, deployment, security, test/quality baseline, observability, and technical debt. Preserve pre-existing failures separately from change-induced failures.

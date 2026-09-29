@@ -15,3 +15,5 @@ A production release should have, as applicable:
 
 A gate may be marked **Not Applicable** only when the project records the rationale.
 Do not convert failed checks into successful checks with `|| true`, unconditional fallback success, or equivalent suppression.
+
+The GitHub `production` environment must require human reviewers and enable self-review prevention. Configure `RELEASE_APPROVAL_SECRET` only in that protected environment. The release workflow creates a masked, job-scoped authorization token; the adopting project's deployment step must run in the same job after authorization verification.

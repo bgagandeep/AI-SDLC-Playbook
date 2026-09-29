@@ -33,14 +33,14 @@ The software lifecycle operates as a continuous directed graph loop across 7 dis
 - **Process (TDD Protocol)**:
   1. Agent writes failing test cases based on `plan.md` proof criteria (`pytest` / `npm run test` / `flutter test`).
   2. Agent executes tests to confirm red failure state.
-  3. Red test file is locked via hook (`PreToolUse` block on test edit).
+  3. Agent locks the red test with `python3 scripts/test_guard.py lock <test-path>`; the Claude PreToolUse hook then blocks edits to it.
   4. Agent writes implementation code until all tests pass green.
-  5. Agent runs local feedback loop and Playwright browser verification.
+  5. Agent unlocks with `python3 scripts/test_guard.py unlock --all`, then runs the full local feedback loop and applicable Playwright verification.
 
 ### Phase 5: Continuous Evals & Multi-Pass PR Review
 - **Action**: Worker Agent opens Pull Request.
 - **Process**:
-  1. CI pipeline executes Continuous Evals suite (20–50 benchmark tasks).
+  1. CI executes the project-specific evaluation suite stored in `evals/` when one exists; material AI behavior changes must add or update evaluation evidence.
   2. Adversarial Reviewer Agent runs `REVIEW.md` 4-Pass Review:
      - **Pass 1: Logic & Regression Pass**: Subtle logic bugs, race conditions, edge-case regressions.
      - **Pass 2: Security & Vulnerability Pass**: Injection risks, authentication gaps, secret leaks.
@@ -52,15 +52,18 @@ The software lifecycle operates as a continuous directed graph loop across 7 dis
 ### Phase 6: Sandboxed Deployment & Gate Enforcement
 - **Action**: CI/CD pipeline triggers deployment workflow.
 - **Process**: Code is deployed to isolated staging sandboxes (Azure Container Apps Dynamic Sessions or Railway environments).
-- **Gate**: Production Gate hook (`.claude/hooks/production-gate.sh`) intercepts release command. Deploy halts until signed human release manager authorization token (`RELEASE_APPROVAL`) is present.
+- **Gate**: Production Gate hook (`.claude/hooks/production-gate.sh`) intercepts release commands. Deploy halts until a valid HMAC-signed, commit-bound human authorization token (`RELEASE_APPROVAL`) is present. The CI `production` environment must enable required reviewers and prevent self-review.
 
 ### Phase 7: SRE/Ops & Closed-Loop Autonomous Operations
 - **Action**: SRE Agent continuously watches live telemetry using Western Electric control bands (`bands.yaml`).
 - **Process**: Evaluates 3σ statistical deviations on production metrics.
 
 #### Production `bands.yaml` Control Configuration:
+Schema is validated by `python3 scripts/check_governance.py`. Every tier requires an `action`; `propose` additionally requires a non-empty `routes` list.
+
 ```yaml
-# Telemetry Control Bands for Active Deployments (e.g., WhatsApp AI Assistant - Disha)
+# Telemetry Control Bands for Active Deployments
+version: 1
 metrics:
   - name: whatsapp_api_webhook_timeout_rate
     baseline: rolling_7d
@@ -68,7 +71,7 @@ metrics:
     tiers:
       1sigma: { action: log }
       2sigma: { action: diagnose, tools: "Read,Grep,mcp/railway" }
-      3sigma: { action: propose, routes: [intent_spec, runbook:scale-worker] }
+      3sigma: { action: propose, routes: [intent_spec, "runbook:scale-worker"] }
 
   - name: cloudflare_ai_gateway_token_cost_spike
     baseline: rolling_24h
@@ -76,7 +79,7 @@ metrics:
     tiers:
       1sigma: { action: log }
       2sigma: { action: diagnose, tools: "Read,mcp/cloudflare" }
-      3sigma: { action: propose, routes: [intent_spec, runbook:fallback-model] }
+      3sigma: { action: propose, routes: [intent_spec, "runbook:fallback-model"] }
 
   - name: postgresql_connection_pool_exhaustion
     baseline: rolling_7d
@@ -84,7 +87,7 @@ metrics:
     tiers:
       1sigma: { action: log }
       2sigma: { action: diagnose, tools: "Read,mcp/postgresql" }
-      3sigma: { action: propose, routes: [intent_spec, runbook:restart-pool] }
+      3sigma: { action: propose, routes: [intent_spec, "runbook:restart-pool"] }
 ```
 
 - **Closed-Loop Action**: When a 3σ breach occurs (e.g., WhatsApp API timeout spike >3σ), the SRE Agent automatically writes a diagnostic `intent/INTENT_NAME.md` file, triggering Phase 1 to restart the SDLC loop autonomously.
@@ -120,7 +123,7 @@ To eliminate context degradation and "verification tax" overhead, agents must fo
 - **Referencing Prior Work**: Use `@Chats` or pass specific SHA references rather than copy-pasting full past conversation transcripts.
 
 ## Phase 0: Discovery & Baseline
-Run `python3 scripts/discover.py` and expand the generated discovery record as needed. Establish the pre-change state before implementation. For brownfield work, baseline existing tests, lint, type, security, build, and deployment failures.
+Run `python3 scripts/discover.py` (add `--root <path>` to scan a project outside this repo) and expand the generated discovery record as needed. The report lists `unknowns` that static detection cannot resolve; a human or agent must fill these in. Establish the pre-change state before implementation. For brownfield work, baseline existing tests, lint, type, security, build, and deployment failures.
 
 ## Universal Stop Conditions
 Pause for human input when requirements conflict, production state is unknown, destructive changes are proposed, rollback is unavailable for critical changes, secrets are exposed, critical security findings appear, or governance/policy ownership is unclear.

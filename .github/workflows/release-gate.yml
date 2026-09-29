@@ -1,0 +1,106 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      gate_name:
+        description: "Gate being authorized"
+        required: true
+        default: production-release
+      risk_class:
+        description: "Standard | Elevated | Critical"
+        required: true
+        default: Standard
+        type: choice
+        options:
+          - Standard
+          - Elevated
+          - Critical
+      evidence_file:
+        description: "Path to the evidence artifact for this gate"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-gate
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Human-authorized release gate
+    runs-on: ubuntu-latest
+    # Requires a protected environment with required reviewers configured.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Check local author identity
+        env:
+          APPROVER: ${{ github.actor }}
+        run: |
+          AUTHOR="$(git log -1 --pretty=format:'%an <%ae>')"
+          echo "Commit author: $AUTHOR"
+          echo "Gate approver: $APPROVER"
+          if git log -1 --pretty=format:'%an %ae' | grep -qiF "$APPROVER"; then
+            echo "BLOCKED: approver authored the commit under review (no self-certification)." >&2
+            exit 1
+          fi
+
+      - name: Record hash-chained ledger entry
+        env:
+          GATE_NAME: ${{ inputs.gate_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          RISK_CLASS: ${{ inputs.risk_class }}
+          APPROVER: ${{ github.actor }}
+          EVIDENCE_FILE: ${{ inputs.evidence_file }}
+        run: |
+          args=(
+            record
+            --gate "$GATE_NAME"
+            --commit "$COMMIT_SHA"
+            --risk-class "$RISK_CLASS"
+            --approver "$APPROVER"
+          )
+          if [[ -n "$EVIDENCE_FILE" ]]; then
+            args+=(--evidence "$EVIDENCE_FILE")
+          fi
+          python3 scripts/gate_ledger.py "${args[@]}"
+
+      - name: Verify ledger chain integrity
+        run: python3 scripts/gate_ledger.py verify
+
+      - name: Mint job-scoped release token
+        env:
+          APPROVER: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
+          RELEASE_APPROVAL_SECRET: ${{ secrets.RELEASE_APPROVAL_SECRET }}
+        run: |
+          if [[ -z "$RELEASE_APPROVAL_SECRET" ]]; then
+            echo "BLOCKED: RELEASE_APPROVAL_SECRET is not configured." >&2
+            exit 1
+          fi
+          hmac="$(
+            printf '%s:%s' "$APPROVER" "$COMMIT_SHA" |
+              openssl dgst -sha256 -hmac "$RELEASE_APPROVAL_SECRET" -r |
+              cut -d' ' -f1
+          )"
+          token="$APPROVER:$COMMIT_SHA:$hmac"
+          echo "::add-mask::$token"
+          echo "RELEASE_APPROVAL=$token" >> "$GITHUB_ENV"
+
+      - name: Verify production authorization
+        env:
+          RELEASE_APPROVAL_SECRET: ${{ secrets.RELEASE_APPROVAL_SECRET }}
+        run: .claude/hooks/production-gate.sh "production authorization check"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gate-ledger
+          path: reviews/gate_ledger.json

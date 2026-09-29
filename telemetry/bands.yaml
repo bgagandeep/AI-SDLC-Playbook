@@ -1,3 +1,5 @@
+# Schema is enforced by scripts/check_governance.py.
+# Every tier needs an action; `propose` additionally needs a non-empty `routes` list.
 version: 1
 metrics:
   - name: api_error_rate
@@ -6,18 +8,18 @@ metrics:
     tiers:
       1sigma: {action: log}
       2sigma: {action: diagnose}
-      3sigma: {action: propose, route: intent_spec}
+      3sigma: {action: propose, routes: [intent_spec]}
   - name: latency_p95
     baseline: rolling_7d
     rules: western_electric
     tiers:
       1sigma: {action: log}
       2sigma: {action: diagnose}
-      3sigma: {action: propose, route: intent_spec}
+      3sigma: {action: propose, routes: [intent_spec]}
   - name: model_cost
     baseline: rolling_24h
     rules: western_electric
     tiers:
       1sigma: {action: log}
       2sigma: {action: diagnose}
-      3sigma: {action: propose, route: intent_spec}
+      3sigma: {action: propose, routes: [intent_spec, "runbook:fallback-model"]}
