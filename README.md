@@ -176,8 +176,9 @@ ai-native-sdlc/
     └── bands.yaml                 # Western Electric 3σ telemetry control bands configuration
 ```
 
-> `intent/`, `specs/`, and `plans/` are created on first use. `reviews/` holds generated
-> runtime state (`gate_ledger.json`, `agent_org_status.json`) and is gitignored.
+> `intent/`, `specs/`, and `plans/` ship with template READMEs and receive project artifacts on first use.
+> `discovery/project.json` and `reviews/` state (`gate_ledger.json`, `agent_org_status.json`)
+> are generated per project and gitignored by default.
 > IDE rule files (`.cursorrules`, `.windsurfrules`, `CLAUDE.md`,
 > `.github/copilot-instructions.md`) are symlinks to `AGENTS.md` created by
 > `scripts/verify-context-kit.sh` — never edit them directly.

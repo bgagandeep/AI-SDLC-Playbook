@@ -8,6 +8,7 @@ coverage.xml
 htmlcov/
 
 # Runtime state produced by framework scripts
+discovery/project.json
 reviews/gate_ledger.json
 reviews/agent_org_status.json
 .cursor/.grind-state.json
